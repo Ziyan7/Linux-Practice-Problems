@@ -1,0 +1,333 @@
+Day 3 Practice Problems
+
+// Move files from one folder to respective folders
+#!/bin/bash
+
+touch abc.txt def.txt ghi.txt jkl.txt;
+
+for file in `ls *.txt`
+do
+    echo $file;
+done
+
+for file in `ls *.txt`
+do
+    echo $file;
+    basename=`echo $file | awk -F. '{print $1}'`;
+    extension=`echo $file | awk -F. '{print $2}'`;
+    if [ -d $basename ]
+    then
+    rm -r $basename;
+    fi
+    mkdir $basename;
+    mv $file $basename;
+done
+
+Output:
+abc.txt
+def.txt
+ghi.txt
+jkl.txt
+abdul@DESKTOP-1U7LDEN:~/doc$ ls
+abc  def  ghi  jkl
+abdul@DESKTOP-1U7LDEN:~/doc$ cd abc
+abdul@DESKTOP-1U7LDEN:~/doc/abc$ ls
+abc.txt
+abdul@DESKTOP-1U7LDEN:~/doc/abc$ cd ../def
+abdul@DESKTOP-1U7LDEN:~/doc/def$ ls
+def.txt
+abdul@DESKTOP-1U7LDEN:~/doc/abc$ cd ../ghi
+abdul@DESKTOP-1U7LDEN:~/doc/def$ ls
+ghi.txt
+abdul@DESKTOP-1U7LDEN:~/doc/abc$ cd ../jkl
+abdul@DESKTOP-1U7LDEN:~/doc/def$ ls
+jkl.txt
+=============================================
+
+//Append the current date to all log files name which has extension .log.1 from a folder.
+
+#!/bin/bash
+
+touch abc.log.1 def.log.1 ghi.log.1 jkl.log.1 mno.log.1;
+
+echo "List of files";
+
+for file in `ls *.log.1`
+do
+    echo $file;
+done
+
+for file in `ls *.log.1`
+do
+    echo "Renaming $file";
+    basename=`echo $file | awk -F. '{print $1}'`;
+    extension=`echo $file | awk -F. '{print $2"."$3}'`;
+    echo "Basename $basename";
+    echo "Extension $extension";
+    d=`date +%d%m%Y`
+    finalName=`echo $basename-$d.$extension`;
+    mv $file $finalName;
+    echo "$file renamed to $finalName";
+done
+echo "successfull";
+
+OUTPUT
+
+abdul@DESKTOP-1U7LDEN:~/two$ ./third.sh
+List of files
+abc.log.1
+def.log.1
+ghi.log.1
+jkl.log.1
+mno.log.1
+Renaming abc.log.1
+Basename abc
+Extension log.1
+abc.log.1 renamed to abc-17082021.log.1
+Renaming def.log.1
+Basename def
+Extension log.1
+def.log.1 renamed to def-17082021.log.1
+Renaming ghi.log.1
+Basename ghi
+Extension log.1
+ghi.log.1 renamed to ghi-17082021.log.1
+Renaming jkl.log.1
+Basename jkl
+Extension log.1
+jkl.log.1 renamed to jkl-17082021.log.1
+Renaming mno.log.1
+Basename mno
+Extension log.1
+mno.log.1 renamed to mno-17082021.log.1
+successfull
+
+===============================================
+//Archive the files from /var/log folder which have modified 7 days ago and move it to your backup folder. 
+
+#!/bin/bash
+
+backup=Backup;
+mkdir $backup;
+for file in `find /var/log -mtime +7`
+do
+    echo "moving file $file to Backup folder";
+    sudo mv $file $backup;
+done
+echo "Backed up successfully"
+
+OUTPUT
+
+abdul@DESKTOP-1U7LDEN:~$ ./fourth.sh
+moving file /var/log/btmp to Backup folder
+[sudo] password for abdul:
+moving file /var/log/dist-upgrade to Backup folder
+moving file /var/log/journal to Backup folder
+moving file /var/log/landscape to Backup folder
+moving file /var/log/lxd to Backup folder
+moving file /var/log/unattended-upgrades to Backup folder
+moving file /var/log/wtmp to Backup folder
+Backed up successfully
+
+=============================================================
+
+//Print last 4 frequently access urls count in sorted order from /var/log/httpd/access.log
+
+#!/bin/bash
+
+cat access.log | awk '{count[$7]++} END {for(i in count) print count[i], i}' | sort -nr | uniq | head -4;
+
+OUTPUT
+abdul@DESKTOP-1U7LDEN:~$ ./sixth.sh
+199 /vendor.js
+199 /scripts.js
+199 /runtime.js
+199 /favicon.ico
+
+================================================================
+
+//Print list of last 4 frequently access unique urls at particular hours from /var/log/httpd/access.log
+
+#!/bin/bash
+
+#list all routes accessed at 12pm ($1=12 in second awk command)
+cat access.log | awk '{print $4, $7}' | cut -c 14-15,22- | awk '$1 == 12 {count[$2]++} END {for(i in count) print count[i], i}' | sort -nr | uniq | head -4;
+
+OUTPUT
+abdul@DESKTOP-1U7LDEN:~$ ./six.sh
+62 /login
+60 /favicon.ico
+58 /vendor.js
+58 /styles.js
+
+=====================================================================
+//Print list of web response code count in the unique sorted order at specific hours
+
+#!/bin/bash
+
+#list all web response codes accessed at 12pm ($1=12 in second awk command)
+cat access.log | awk '{print $4, $9}' | cut -c 14-15,22- | awk '$1 == 12 {count[$2]++} END {for(i in count) print count[i], i}' | sort -nr | uniq | head -4;
+
+OUTPUT
+abdul@DESKTOP-1U7LDEN:~$ ./seven.sh
+894 200
+18 304
+4 206
+=======================================================================
+
+//Print list of last 10 unique sorted client IP from /var/log/httpd/access.log
+
+#!/bin/bash
+
+cat access.log | awk '{count[$NF]++} END {for(i in count) print count[i], i}' | sort -nr | uniq | head -10;
+
+
+OUTPUT
+abdul@DESKTOP-1U7LDEN:~$ ./eighth.sh
+3049 "114.79.180.62"
+33 "157.33.193.244"
+17 "66.249.79.48"
+15 "66.249.79.45"
+10 "66.249.79.42"
+10 "45.113.248.190"
+7 "45.93.20.4"
+7 "182.48.221.222"
+7 "14.142.39.102"
+6 "66.249.73.95"
+========================================================================
+//Check if a folder exists or no.if its not present, create it
+
+#!/bin/bash
+
+if [ -d hero ]
+then
+    echo "Directory named hero already exists";
+else
+    mkdir hero
+    echo "Directory created";
+fi
+
+OUTPUT
+
+abdul@DESKTOP-1U7LDEN:~$ ./nineth.sh
+Directory created
+abdul@DESKTOP-1U7LDEN:~$ ./nineth.sh
+Directory named hero already exists
+
+===================================================================
+
+//Execute command "hello" and "ls" and check its execution status
+
+#!/bin/bash
+
+hello
+echo "State of Hello Command $?"
+ls
+echo "State of ls Command $?"
+
+OUTPUT
+abdul@DESKTOP-1U7LDEN:~$ ./tenth.sh
+./tenth.sh: line 3: hello: command not found
+State of Hello Command 127
+access.log       demo.java  fifth.sh   sixth.sh  two
+Backup   access.log.save  doc        fourth.sh  tenth.sh
+Test1    demo.class       eighth.sh  nineth.sh  tesh.sh
+State of ls Command 0
+
+=======================================================
+
+//Set environment usersecret="dH34xJaa23" if its already not set
+
+#!/bin/bash
+
+secret=`echo $usersecret`;
+
+if [ -z $secret ]
+then
+    export usersecret=dH34xJaa23;
+else
+    echo "Environment already has an value for usersecret";
+fi
+
+============================================================
+
+//Find a word "systemd" from all log files in the folder /var/log and print number of occurence more than 0 against each file
+
+#!/bin/bash
+
+for file in `ls /var/log`
+do
+    if [ -f /var/log/$file ]
+    then
+        occ=`sudo cat /var/log/$file | grep -ce systemd`;
+        if [ $occ -ne 0 ]
+        then
+            echo "$file $occ"
+        fi
+    fi
+done
+
+OUTPUT
+abdul@DESKTOP-1U7LDEN:~$ ./twelve.sh
+[sudo] password for abdul:
+dpkg.log 8
+
+==========================================================================
+
+//Create processlist table display process id, parent process id, common name, % of memory consumption ,%of cpu utilized.
+
+ps -efo pid,ppid,cmd,%mem,%cpu
+
+OUTPUT
+
+abdul@DESKTOP-1U7LDEN:~$ ps -efo pid,ppid,cmd,%mem,%cpu
+  PID  PPID CMD                         %MEM %CPU
+  200   199 -bash HOSTTYPE=x86_64 LANG=  0.0  0.0
+  577   200  \_ ps -efo pid,ppid,cmd,%m  0.0  0.0
+
+=============================================================================
+
+//Data analysis/manipulation (AWK)
+
+#!/bin/bash
+echo "EmployeeName and total pay with basepay > 10000"
+cat data.csv | awk '$4>10000 {print $2" "$7}'
+echo
+echo "Total pay of Captains"
+cat data.csv | awk '$3~/CAPTAIN/ {SUM+=$7} END{print SUM}'
+echo
+echo "Job_Title Overtime_Pay"
+cat data.csv | awk '$5 > 7000 && $5 < 10000 {print $3" "$5}'
+echo
+echo "Average Base Pay"
+cat data.csv | awk '{sum+=$4} END {print sum/NR}'
+
+OUTPUT
+
+abdul@DESKTOP-1U7LDEN:~$ ./fourteenth.sh
+EmployeeName and total pay with basepay > 10000
+EmployeeName TotalPay
+NATHANIEL 567595
+GARY 538909
+ALBERT 335279
+CHRISTOPHER 332343
+PATRICK 326373
+DAVID 316285
+ALSON 315981
+DAVID 307899
+JOANNE 302377
+PATRICIA 297608
+EDWARD 294580
+
+Total pay of Captains
+1171796
+
+Job_Title Overtime_Pay
+DEPUTYCHIEF 9737
+ASSTDEPUTY 8601
+
+Average Base Pay
+145821
+
+
+
